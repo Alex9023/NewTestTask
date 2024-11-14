@@ -15,6 +15,7 @@ export default class SignUpVariables {
         submitPassword: '/identity/authenticate/v1.0/register/password/submit**'
     }
     buttons = {
+        register: 'Register',
         submitEmail: 'Continue with email',
         submitPassword: 'Create account'
     }

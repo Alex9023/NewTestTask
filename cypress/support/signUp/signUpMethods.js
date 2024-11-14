@@ -3,12 +3,12 @@ import SignUpVariables from "./signUpVariables"
 
 export default class SignUpMethods extends SignUpVariables {
     openSignUp() {
-        cy.get('[data-testid="header-sign-up-button"]', {timeout: 15000}).should('contain.text', 'Register').as('headerSignUp')
-        cy.get('@headerSignUp').click()
+        cy.contains('[data-testid="header-sign-up-button"]', this.buttons.register, {timeout: 10000}).as('headerSignUp')
+        cy.get('@headerSignUp', {timeout: 10000}).click()
     }
     clickSignUpInPopUp(actionButton) {
-        cy.get('[role="dialog"]').contains(actionButton).as('popUptSignUp')
-        cy.get('@popUptSignUp').click()
+        cy.contains('[role="dialog"]', actionButton, {timeout: 10000} ).as('popUptSignUp')
+        cy.get('@popUptSignUp', {timeout: 10000}).click()
     }
 
     typeUserEmail(email) {

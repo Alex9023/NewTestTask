@@ -61,7 +61,7 @@ describe('Sign Up', () => {
         cy.wait('@submitEmail').then((res) => {
             if(res.response.statusCode !== 200 ) {
                 signUp.isCaptchaShown()
-            } else if (res.response.body.identifier == 'STEP_SIGN_IN__PASSWORD') {
+            } else if (res.response.body.identifier === 'STEP_SIGN_IN__PASSWORD') {
                 signUp.isExistEmailHint(signUp.existUser.email)
             }
         })
