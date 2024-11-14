@@ -1,31 +1,27 @@
-import SignUpVariables from "./signUp.variables"
+import SignUpVariables from "./signUpVariables"
+
 
 export default class SignUpMethods extends SignUpVariables {
     openSignUp() {
         cy.get('[data-testid="header-sign-up-button"]', {timeout: 15000}).should('contain.text', 'Register').as('headerSignUp')
         cy.get('@headerSignUp').click()
     }
-    clickSignUpInStartPopUp() {
-        cy.get('[role="dialog"]').contains('Sign in or register').as('popUptSignUp')
+    clickSignUpInPopUp(actionButton) {
+        cy.get('[role="dialog"]').contains(actionButton).as('popUptSignUp')
         cy.get('@popUptSignUp').click()
     }
-    isSignInPage() {
-        cy.url().should('include', 'https://account.booking.com/sign-in')
-    }
+
     typeUserEmail(email) {
         cy.get('#username').type(email)
     }
 
-    sendUserEmail() {
-        cy.get('[type="submit"]').should('have.text', 'Continue with email').click()
+    submit(buttonTitle) {
+        cy.contains('[type="submit"]', buttonTitle).click()
     }
 
     isCaptchaShown() {
-        cy.get('.page-header').should('contain.text', "Let's make sure you're human")
-    }
-
-    isPasswordCreationPage() {
-        cy.url().should('include', 'https://account.booking.com/register/password')
+        const captchaText = "Let's make sure you're human"
+        cy.get('.page-header').should('contain.text', captchaText)
     }
 
     typeUserPassword(password) {
@@ -36,27 +32,23 @@ export default class SignUpMethods extends SignUpVariables {
         cy.get('#confirmed_password').type(password)
     }
 
-    createAccount() {
-        cy.get('[type="submit"]').should('have.text', 'Create account').click()
-    }
-
     isSpamDetected() {
-        cy.get('.error-block').should('contain.text', "Too many attempts – try again later.")
-    }
-    
-    isSuccessAccountCreation() {
-        cy.url().should('include', 'https://www.booking.com/?auth_success=1')
+        const errorText = "Too many attempts – try again later."
+        cy.get('.error-block').should('contain.text', errorText)
     }
 
-    isShownWelcomePopUp() {
-        cy.get('[role="dialog"]').should('contain.text', 'Welcome to Genius')
+    isPopUpExist(text) {
+        cy.contains('[role="dialog"]', text, {timeout: 10000}).should('be.visible')
     }
+
     isExistEmailHint(email) {
-        cy.get('.page-header').should('contain.text', `Enter your Booking.com password for ${email}`)
+        const hint = 'Enter your Booking.com password for ' + email
+        cy.get('.page-header').should('contain.text', hint)
     }
 
-    isInvalidEmailError() {
-        cy.get('#username-note').should('contain.text', 'Make sure the email address you entered is correct.').and('have.css', 'color', 'rgb(212, 17, 30)')
+    isInvalidEmailError(errorText) {
+        const errorColor = 'rgb(212, 17, 30)'
+        cy.get('#username-note').should('contain.text', errorText).and('have.css', 'color', errorColor)
         cy.get('#username').parent().find('svg').should('exist')
     }
 }

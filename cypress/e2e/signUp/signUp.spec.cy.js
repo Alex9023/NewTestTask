@@ -1,4 +1,4 @@
-import SignUpMethods from '../../support/signUp/signUpMethods';
+import SignUpMethods from '../../support/signUp/signUpMethods'
 
 const Fakerator = require('fakerator')
 const fakerator = Fakerator()
@@ -7,23 +7,24 @@ describe('Sign Up', () => {
     const signUp = new SignUpMethods()
 
     beforeEach(() => {
-        cy.visit('https://www.booking.com/')
+        cy.visit('/')
         cy.document().then((doc) => {
-            const element = doc.querySelector('[aria-label^="Window Offering"]');
-            if (element) {
-                signUp.clickSignUpInStartPopUp()
-                signUp.isSignInPage()
-            } else {
-                signUp.openSignUp()
-                signUp.isSignInPage()
-            }
+            const element = doc.querySelector(`[aria-label^="${signUp.popUps.firstVisit.text}"]`);
+                if(element) {
+                    signUp.clickSignUpInPopUp(signUp.popUps.firstVisit.button)
+                    cy.checkUrl(signUp.pageUrl.signIn)
+                } else {
+                    signUp.openSignUp()
+                    cy.checkUrl(signUp.pageUrl.signIn)
+                }
         })
         cy.intercept({
-            url: 'https://account.booking.com/api/identity/authenticate/v1.0/enter/email/submit**',
+            url: `${Cypress.env('prod_api')}${signUp.api.submitEmail}`,
             method: 'POST'
         }).as('submitEmail')
+
         cy.intercept({
-            url: 'https://account.booking.com/api/identity/authenticate/v1.0/register/password/submit**',
+            url: `${Cypress.env('prod_api')}${signUp.api.submitPassword}`,
             method: 'POST'
         }).as('register')
 
@@ -31,20 +32,19 @@ describe('Sign Up', () => {
     it('Sign Up with valid data', () => {
         const email = fakerator.random.string(8) + '@gmail.com'
         signUp.typeUserEmail(email)
-        signUp.sendUserEmail()
+        signUp.submit(signUp.buttons.submitEmail)
         cy.wait('@submitEmail').then((res) => {
             if(res.response.statusCode !== 200 ) {
                 signUp.isCaptchaShown()
             } else {
-                signUp.isPasswordCreationPage()
-                signUp.typeUserPassword(signUp.validUser.password)
-                signUp.confirmUserPassword(signUp.validUser.password)
-                signUp.createAccount()
-                cy.wait('@register').then((res) => {
-                    
+                cy.checkUrl(signUp.pageUrl.passwordCreation)
+                signUp.typeUserPassword(signUp.defaultValidPassword)
+                signUp.confirmUserPassword(signUp.defaultValidPassword)
+                signUp.submit(signUp.buttons.submitPassword)
+                cy.wait('@register').then((res) => {       
                     if(!res.response.body.error) {
-                        signUp.isSuccessAccountCreation()
-                        signUp.isShownWelcomePopUp()
+                        cy.checkUrl(signUp.pageUrl.successRegister)
+                        signUp.isPopUpExist(signUp.popUps.successRegister.text)
                     } else {
                         const registerError = res.response.body.error[0].errorDetails
                         expect(registerError).is.equal('Request throttled')
@@ -57,7 +57,7 @@ describe('Sign Up', () => {
 
     it('Sign Up with already used email', () => {
         signUp.typeUserEmail(signUp.existUser.email)
-        signUp.sendUserEmail()
+        signUp.submit(signUp.buttons.submitEmail)
         cy.wait('@submitEmail').then((res) => {
             if(res.response.statusCode !== 200 ) {
                 signUp.isCaptchaShown()
@@ -68,8 +68,8 @@ describe('Sign Up', () => {
     });
 
     it('Sign Up with invalid email', () => {
-        signUp.typeUserEmail(signUp.invalidUser.email)
-        signUp.sendUserEmail()
-        signUp.isInvalidEmailError()
+        signUp.typeUserEmail(signUp.invalidEmail)
+        signUp.submit(signUp.buttons.submitEmail)
+        signUp.isInvalidEmailError(signUp.emailErrors.default)
     });
 })

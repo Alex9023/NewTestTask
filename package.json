@@ -4,5 +4,9 @@
   },
   "dependencies": {
     "fakerator": "^0.3.6"
+  },
+  "scripts": {
+    "cy:open": "cypress open --e2e --browser chrome",
+    "cy:run": "cypress run --e2e --browser chrome"
   }
 }
